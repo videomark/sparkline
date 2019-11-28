@@ -84,8 +84,8 @@ export function sparkline(svg, entries, options) {
 
   // The maximum value. This is used to calculate the Y coord of
   // each sparkline datapoint.
-  const max = typeof(options.max) === "number" ? options.max : Math.max(...values);
-  const min = typeof(options.min) === "number" ? options.min : Math.min(...values);
+  const max = typeof(options.max) === "number" ? options.max : Math.max(...values.filter(value => !isNaN(value)));
+  const min = typeof(options.min) === "number" ? options.min : Math.min(...values.filter(value => !isNaN(value)));
 
   // Some arbitrary value to remove the cursor and spot out of
   // the viewing canvas.
@@ -100,40 +100,45 @@ export function sparkline(svg, entries, options) {
   // Hold all datapoints, which is whatever we got as the entry plus
   // x/y coords and the index.
   const datapoints = [];
-
-  // Hold the line coordinates.
-  const pathY = getY(max, min, height, strokeWidth + spotRadius, values[0]);
-  let pathCoords = `M${spotDiameter} ${pathY}`;
+  const lines = [[]];
 
   values.forEach((value, index) => {
-    const x = index * offset + spotDiameter;
-    const y = getY(max, min, height, strokeWidth + spotRadius, value);
-
-    datapoints.push(Object.assign({}, entries[index], {
-      index: index,
-      x: x,
-      y: y
-    }));
-
-    pathCoords += ` L ${x} ${y}`;
+    if (isNaN(value)) {
+      lines.push([]);
+    } else {
+      lines[lines.length-1].push({value, index});
+    }
   });
 
-  const path = buildElement("path", {
-    class: "sparkline--line",
-    d: pathCoords,
-    fill: "none"
+  const getX = function(index) {
+    return index * offset + spotDiameter;
+  }
+
+  lines.forEach((values) => {
+    if (values.length) {
+      let pathCoords = "";
+      values.forEach((point, i) => {
+        const x = getX(point.index);
+        const y = getY(max, min, height, strokeWidth + spotRadius, point.value);
+        pathCoords += i ? ` L ${x} ${y}` : `M${x} ${y}`;
+        datapoints[point.index] = Object.assign(point, {index: point.index, x, y});
+      });
+      const path = buildElement("path", {
+        class: "sparkline--line",
+        d: pathCoords,
+        fill: "none"
+      });
+      svg.appendChild(path);
+
+      let fillCoords = `${pathCoords} V ${fullHeight} L ${getX(values[0].index)} ${fullHeight} Z`;
+      const fill = buildElement("path", {
+        class: "sparkline--fill",
+        d: fillCoords,
+        stroke: "none"
+      });
+      svg.appendChild(fill);
+    }
   });
-
-  let fillCoords = `${pathCoords} V ${fullHeight} L ${spotDiameter} ${fullHeight} Z`;
-
-  const fill = buildElement("path", {
-    class: "sparkline--fill",
-    d: fillCoords,
-    stroke: "none"
-  });
-
-  svg.appendChild(fill);
-  svg.appendChild(path);
 
   if (!interactive) {
     return;
@@ -181,7 +186,7 @@ export function sparkline(svg, entries, options) {
     const mouseX = event.offsetX;
 
     let nextDataPoint = datapoints.find(entry => {
-      return entry.x >= mouseX;
+      return entry && entry.x >= mouseX;
     });
 
     if (!nextDataPoint) {
