@@ -69,11 +69,11 @@ export function sparkline(svg, entries, options) {
   const values = entries.map(entry => fetch(entry));
 
   // The rendering width will account for the spot size.
-  const width = parseFloat(svg.attributes.width.value) - spotDiameter * 2;
+  const width = parseFloat(svg.clientWidth) - spotDiameter * 2;
 
   // Get the SVG element's full height.
   // This is used
-  const fullHeight = parseFloat(svg.attributes.height.value);
+  const fullHeight = parseFloat(svg.clientHeight);
 
   // The rendering height accounts for stroke width and spot size.
   const height = fullHeight - (strokeWidth * 2) - spotDiameter;
@@ -154,8 +154,8 @@ export function sparkline(svg, entries, options) {
   svg.appendChild(spot);
 
   const interactionLayer = buildElement("rect", {
-    width: svg.attributes.width.value,
-    height: svg.attributes.height.value,
+    width: svg.clientWidth,
+    height: svg.clientHeight,
     style: "fill: transparent; stroke: transparent",
     class: "sparkline--interaction-layer",
   });
