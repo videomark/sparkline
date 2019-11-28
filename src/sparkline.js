@@ -57,7 +57,9 @@ export function sparkline(svg, entries, options) {
 
   // Get the stroke width; this is used to compute the
   // rendering offset.
-  const strokeWidth = parseFloat(svg.attributes["stroke-width"].value);
+  let strokeWidth = 0;
+  if (svg.attributes["stroke-width"]) strokeWidth = Number(svg.attributes["stroke-width"].value);
+  if (isNaN(strokeWidth)) strokeWidth = 0;
 
   // By default, data must be formatted as an array of numbers or
   // an array of objects with the value key (like `[{value: 1}]`).
