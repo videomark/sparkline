@@ -1,5 +1,5 @@
-function getY(max, height, diff, value) {
-  let y = (value * height / max);
+function getY(max, min, height, diff, value) {
+  let y = (value - min) * height / (max - min);
   if (isNaN(y)) y = 0;
   return parseFloat((height - y + diff).toFixed(2));
 }
@@ -84,7 +84,8 @@ export function sparkline(svg, entries, options) {
 
   // The maximum value. This is used to calculate the Y coord of
   // each sparkline datapoint.
-  const max = Math.max(...values);
+  const max = typeof(options.max) === "number" ? options.max : Math.max(...values);
+  const min = typeof(options.min) === "number" ? options.min : Math.min(...values);
 
   // Some arbitrary value to remove the cursor and spot out of
   // the viewing canvas.
@@ -101,12 +102,12 @@ export function sparkline(svg, entries, options) {
   const datapoints = [];
 
   // Hold the line coordinates.
-  const pathY = getY(max, height, strokeWidth + spotRadius, values[0]);
+  const pathY = getY(max, min, height, strokeWidth + spotRadius, values[0]);
   let pathCoords = `M${spotDiameter} ${pathY}`;
 
   values.forEach((value, index) => {
     const x = index * offset + spotDiameter;
-    const y = getY(max, height, strokeWidth + spotRadius, value);
+    const y = getY(max, min, height, strokeWidth + spotRadius, value);
 
     datapoints.push(Object.assign({}, entries[index], {
       index: index,
