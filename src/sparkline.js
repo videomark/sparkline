@@ -1,6 +1,8 @@
 function getY(max, min, height, diff, value) {
   let y = (value - min) * height / (max - min);
   if (isNaN(y)) y = 0;
+  if (y ===  Infinity) y = Number.MAX_SAFE_INTEGER;
+  if (y === -Infinity) y = Number.MIN_SAFE_INTEGER;
   return parseFloat((height - y + diff).toFixed(2));
 }
 
