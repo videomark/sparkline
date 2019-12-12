@@ -1,5 +1,5 @@
 {
-  "name": "@fnando/sparkline",
+  "name": "@videomark/sparkline",
   "version": "0.3.10",
   "files": [
     "src/sparkline.js",
